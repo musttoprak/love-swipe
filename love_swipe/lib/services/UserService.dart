@@ -79,4 +79,85 @@ class UserService {
     var digest = sha256.convert(bytes); // SHA-256 hash işlemi
     return digest.toString(); // Hashlenmiş şifreyi string olarak döndürün
   }
+
+
+  Future<void> updateUsername(int userId, String newUsername) async {
+    MySqlConnection connection = await _db.connect();
+
+    await connection.query('''
+    UPDATE users SET username = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+  ''', [
+      newUsername,
+      userId,
+    ]);
+
+    await _db.close(connection);
+  }
+
+  Future<void> updateProfilePhoto(int userId, String newProfilePhoto) async {
+    MySqlConnection connection = await _db.connect();
+
+    await connection.query('''
+    UPDATE users SET profile_photo = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+  ''', [
+      newProfilePhoto,
+      userId,
+    ]);
+
+    await _db.close(connection);
+  }
+
+  Future<void> updateEmail(int userId, String newEmail) async {
+    MySqlConnection connection = await _db.connect();
+
+    await connection.query('''
+    UPDATE users SET email = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+  ''', [
+      newEmail,
+      userId,
+    ]);
+
+    await _db.close(connection);
+  }
+
+  Future<void> updateBiography(int userId, String newBiography) async {
+    MySqlConnection connection = await _db.connect();
+
+    await connection.query('''
+    UPDATE users SET biography = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+  ''', [
+      newBiography,
+      userId,
+    ]);
+
+    await _db.close(connection);
+  }
+
+  Future<List<UserModel>> getRandomUser({int limit = 1}) async {
+    MySqlConnection connection = await _db.connect();
+
+    var result = await connection.query('''
+    SELECT * FROM users ORDER BY RAND() LIMIT ?
+  ''', [
+      limit,
+    ]);
+
+    await _db.close(connection);
+    List<UserModel> userModels = [];
+    if (result.isNotEmpty) {
+      for (var row in result) { // Her bir `row` için döngüyü başlatın
+        userModels.add(UserModel(
+          id: row['id'],
+          username: row['username'],
+          password: row['password'],
+          email: row['email'],
+          profilePhoto: row['profile_photo'],
+          biography: row['biography'],
+          createdAt: row['created_at'],
+          updatedAt: row['updated_at'],
+        ));
+      }
+    }
+    return userModels;
+  }
 }

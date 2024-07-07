@@ -1,4 +1,9 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:love_swipe/views/HomeScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -7,7 +12,14 @@ import '../constants/constants.dart';
 import '../services/UserService.dart';
 import 'SignUpScreen.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _emailController = TextEditingController();
@@ -23,10 +35,11 @@ class LoginScreen extends StatelessWidget {
       if (result) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         prefs.setBool('isLoggedIn', true);
-        prefs.setString('email', email); // E-postayı SharedPreferences'e kaydet
+        prefs.setBool('isFirstLogin', true);
+        prefs.setString('email', email);
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
         );
       } else {
         print("bilgiler yanlış");

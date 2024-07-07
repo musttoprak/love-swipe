@@ -1,12 +1,12 @@
 class UserModel {
-  final int id;
-  final String username;
-  final String password;
-  final String email;
-  final String profilePhoto;
-  final String biography;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+   int id;
+   String username;
+   String password;
+   String email;
+   String? profilePhoto;
+   String biography;
+   DateTime createdAt;
+   DateTime updatedAt;
 
   UserModel({
     required this.id,

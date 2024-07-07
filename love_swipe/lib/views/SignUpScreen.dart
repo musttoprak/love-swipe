@@ -9,7 +9,7 @@ import '../services/UserService.dart';
 
 class SignUpScreen extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
-  final String _profilePhoto = "image";
+  final String _profilePhoto = "";
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -25,6 +25,8 @@ class SignUpScreen extends StatelessWidget {
           profilePhoto: _profilePhoto, biography: biography);
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setBool('isLoggedIn', true);
+      prefs.setBool('isFirstLogin', true);
+      prefs.setString('email', email);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),

@@ -3,7 +3,7 @@ import 'package:mysql1/mysql1.dart';
 class Database {
 
   Future<MySqlConnection> _initializeConnection() async {
-    String host = '10.0.2.2';
+    String host = '192.168.1.16';
     int port = 3306; 
     String user = 'root';
     String password = '';

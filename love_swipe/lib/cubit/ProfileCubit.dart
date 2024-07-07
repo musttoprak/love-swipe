@@ -4,9 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/UserModel.dart';
 import '../services/UserService.dart';
+import '../views/LoginScreen.dart';
 
 class ProfileCubit  extends Cubit<ProfileState> {
-  bool isLoading = true;
+  bool isLoading = false;
   BuildContext context;
   UserService userService = UserService();
   UserModel? user;
@@ -19,10 +20,19 @@ class ProfileCubit  extends Cubit<ProfileState> {
     changeLoadingView();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? email = prefs.getString('email');
+    print(email);
     if (email != null) {
       user = await userService.getUserByEmail(email);
       changeLoadingView();
       emit(ProfileLoadedState(user));
+    }else {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setBool('isLoggedIn', false);
+      prefs.remove('email');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
     }
   }
 
