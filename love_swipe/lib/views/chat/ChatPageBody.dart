@@ -4,44 +4,36 @@ import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
 import '../../models/ChatMessage.dart';
-import '../PremiumScreen.dart';
-
+import '../components/PremiumScreen.dart';
 class ChatPageBody extends StatefulWidget {
-  final String user;
-  final String message;
-  final String image;
-  final int id;
+  final ChatMessage user;
 
-  const ChatPageBody(this.user, this.message, this.image, this.id, {super.key});
+  const ChatPageBody(this.user, {super.key});
 
   @override
   State<ChatPageBody> createState() => _ChatPageBodyState();
 }
 
 class _ChatPageBodyState extends State<ChatPageBody> {
-  late final String user;
-  late final String message;
-  late final String image;
-  late final int id;
+  late final ChatMessage user;
   late List<ChatMessage> chatMessages;
 
   @override
   void initState() {
     user = widget.user;
-    message = widget.message;
-    image = widget.image;
-    id = widget.id;
     chatMessages = [
       ChatMessage(
-        image: image,
-        message: message,
+        user: user.user,
+        image: user.image,
+        message: user.message,
         messageType: ChatMessageType.text,
         messageStatus: MessageStatus.viewed,
         isSender: false,
       ),
       ChatMessage(
-        image: image,
-        message: image,
+        user: user.user,
+        image: user.image,
+        message: user.image,
         messageType: ChatMessageType.image,
         messageStatus: MessageStatus.viewed,
         isSender: false,

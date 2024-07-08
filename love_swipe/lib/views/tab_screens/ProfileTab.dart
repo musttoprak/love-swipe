@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:love_swipe/constants/app_colors.dart';
 import 'package:love_swipe/views/profile/EditDescriptionFormPage.dart';
@@ -13,7 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../components/display_widget.dart';
 import '../../cubit/ProfileCubit.dart';
 import '../../models/UserModel.dart';
-import '../LoginScreen.dart';
+import '../auth/LoginScreen.dart';
 
 class ProfileTab extends StatefulWidget {
   const ProfileTab({super.key});
@@ -26,7 +27,8 @@ class _ProfileTabState extends State<ProfileTab> with ProfileMixin {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ProfileCubit(context),
+      create: (context) => ProfileCubit(context, formkey, nameController,
+          emailController, biographyController),
       child: BlocBuilder<ProfileCubit, ProfileState>(
         builder: (context, state) {
           if (state is ProfileLoadingState && state.isLoading) {
@@ -53,12 +55,13 @@ class _ProfileTabState extends State<ProfileTab> with ProfileMixin {
             }
           } else {
             return Scaffold(
-                appBar: AppBar(
-                  title: const Text("Profil",
-                      style:
-                      TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                ),
-                body: const Center(child: CircularProgressIndicator()),);
+              appBar: AppBar(
+                title: const Text("Profil",
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              ),
+              body: const Center(child: CircularProgressIndicator()),
+            );
           }
         },
       ),
@@ -67,83 +70,125 @@ class _ProfileTabState extends State<ProfileTab> with ProfileMixin {
 }
 
 mixin ProfileMixin {
+  final GlobalKey<FormState> formkey = GlobalKey<FormState>();
+  TextEditingController nameController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController biographyController = TextEditingController();
+
   Scaffold buildScaffold(BuildContext context, UserModel user) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Profil",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          InkWell(
-            onTap: () async {
-              await navigateSecondPage(context, EditImagePage(user));
-              await context.read<ProfileCubit>().getProfile();
-            },
-            child: DisplayImage(
-              imagePath: user.profilePhoto ?? "assets/default_photo.png",
-              onPressed: () {},
-            ),
-          ),
-          const SizedBox(height: 60),
-          buildUserInfoDisplay(
-              context, user.username, 'Adınız', EditNameFormPage(user)),
-          const SizedBox(height: 20),
-          buildUserInfoDisplay(
-              context, user.email, 'Email adesiniz', EditEmailFormPage(user)),
-          const SizedBox(height: 20),
-          buildUserInfoDisplay(context, user.biography, 'Biyografiniz',
-              EditDescriptionFormPage(user)),
-          const SizedBox(height: 20),
+        title: const Text(
+          "Profil",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              style: ButtonStyle(
-                  maximumSize: WidgetStatePropertyAll<Size>(
-                    Size.fromWidth(
-                      MediaQuery.sizeOf(context).width / 2,
-                    ),
-                  ),
-                  backgroundColor:
-                      WidgetStatePropertyAll<Color>(AppColors.redColor)),
-              onPressed: () async {
+            child: InkWell(
+              onTap: () async {
                 SharedPreferences prefs = await SharedPreferences.getInstance();
                 prefs.setBool('isLoggedIn', false);
                 prefs.remove('email');
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
                 );
               },
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.exit_to_app,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                  SizedBox(
-                    width: 4,
-                  ),
-                  Text(
-                    "Çıkış",
-                    style: TextStyle(color: Colors.white),
-                  )
-                ],
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.pErrorColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.exit_to_app,
+                  color: Colors.white,
+                  size: 18,
+                ),
               ),
             ),
-          ),
+          )
         ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            InkWell(
+              onTap: () async {
+                await navigateSecondPage(context, EditImagePage(user));
+                await context.read<ProfileCubit>().getProfile();
+              },
+              child: DisplayImage(
+                imagePath: user.profilePhoto ?? "assets/default_photo.png",
+                onPressed: () {},
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+              child: Form(
+                key: formkey,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 60),
+                    buildUserInfoDisplay(context, user.username, 'Adınız',
+                        EditNameFormPage(user), nameController),
+                    const SizedBox(height: 20),
+                    buildUserInfoDisplay(context, user.email, 'Email adesiniz',
+                        EditEmailFormPage(user), emailController),
+                    const SizedBox(height: 20),
+                    buildUserInfoDisplay(
+                        context,
+                        user.biography,
+                        'Biyografiniz',
+                        EditDescriptionFormPage(user),
+                        biographyController),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: InkWell(
+                onTap: () async {
+                  await context.read<ProfileCubit>().updateProfile();
+                },
+                child: Container(
+                    width: MediaQuery.sizeOf(context).width * .8,
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.greenColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.update,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        SizedBox(
+                          width: 16,
+                        ),
+                        Text("Güncelle",style: TextStyle(color: Colors.white),),
+                      ],
+                    )),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   // Widget builds the display item with the proper formatting to display the user's info
   Widget buildUserInfoDisplay(BuildContext context, String getValue,
-          String title, Widget editPage) =>
+          String title, Widget editPage, TextEditingController controller) =>
       Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: Column(
@@ -162,38 +207,56 @@ mixin ProfileMixin {
                 height: 1,
               ),
               Container(
-                  width: MediaQuery.sizeOf(context).width - 50,
-                  height: 40,
-                  decoration: const BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Colors.grey,
-                        width: .5,
-                      ),
+                width: MediaQuery.sizeOf(context).width - 50,
+                height: title == "Biyografiniz" ? 120 : 40,
+                decoration: const BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Colors.grey,
+                      width: .5,
                     ),
                   ),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        TextButton(
-                            onPressed: () async {
-                              await navigateSecondPage(context, editPage);
-                              await context.read<ProfileCubit>().getProfile();
-                            },
-                            child: Text(
-                              getValue,
-                              style: const TextStyle(
-                                  fontSize: 16,
-                                  height: 1.4,
-                                  color: AppColors.greenColor),
-                              textAlign: TextAlign.start,
-                            )),
-                        const Icon(
-                          Icons.keyboard_arrow_right,
-                          color: Colors.grey,
-                          size: 40.0,
-                        )
-                      ]))
+                ),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: controller,
+                          minLines: title == "Biyografiniz" ? 4 : 1,
+                          maxLines: title == "Biyografiniz" ? 4 : 1,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.only(bottom: 12),
+                          ),
+                          validator: (value) {
+                            if (value == null) {
+                              return "Lütfen bu alanı doldurunuz";
+                            }
+                            return "";
+                          },
+                          //onPressed: () async {
+                          //  await navigateSecondPage(context, editPage);
+                          //  await context.read<ProfileCubit>().getProfile();
+                          //},
+
+                          //child: Text(
+                          //  getValue,
+                          //  style: const TextStyle(
+                          //      fontSize: 16,
+                          //      height: 1.4,
+                          //      color: AppColors.greenColor),
+                          //  textAlign: TextAlign.start,
+                          //)),
+                        ),
+                      ),
+                      const Icon(
+                        Icons.keyboard_arrow_right,
+                        color: Colors.grey,
+                        size: 40.0,
+                      )
+                    ]),
+              )
             ],
           ));
 

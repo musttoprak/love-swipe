@@ -1,16 +1,13 @@
 import 'dart:async';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:love_swipe/views/HomeScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../components/already_have_an_account_check.dart';
-import '../constants/constants.dart';
-import '../services/UserService.dart';
+import '../../components/already_have_an_account_check.dart';
+import '../../constants/constants.dart';
+import '../../services/UserService.dart';
 import 'SignUpScreen.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

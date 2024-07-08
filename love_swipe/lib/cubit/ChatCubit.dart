@@ -1,36 +1,47 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:love_swipe/services/UserService.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../constants/data.dart';
-import '../models/Chat.dart';
-import '../models/UserModel.dart';
+import '../models/ChatMessage.dart';
 
 class ChatCubit extends Cubit<ChatState> {
   bool isLoading = false;
-  List<Chat> chats = [];
-  List<String> users = [];
-  List<String> images = [];
-  List<String> messages = [];
+  List<ChatMessage> chatMessages = [];
 
   ChatCubit() : super(ChatsInitialState()) {
     loadChats();
+    startPeriodicUpdate();
   }
 
-  void loadChats() async {
+  Future<void> loadChats() async {
+    print("periyota girdi");
     changeLoadingView();
-    UserService userService = UserService();
+    SharedPreferences.resetStatic();
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    images = prefs.getStringList('images') ?? [];
-    messages = prefs.getStringList('messages') ?? [];
-    users = prefs.getStringList('users') ?? [];
+    List<String> chatMessagesJson = prefs.getStringList('chatMessages') ?? [];
+    print("chat mesaj: ${chatMessagesJson.length}");
+    chatMessages = chatMessagesJson.map((messageJson) {
+      print("object");
+      return ChatMessage.fromJson(jsonDecode(messageJson));
+    }).toList();
+
+    chatMessages = chatMessages.reversed.toList();
     changeLoadingView();
-    emit(ChatsLoaded(users,images,messages));
+    emit(ChatsLoaded(chatMessages));
   }
 
   void changeLoadingView() {
     isLoading = !isLoading;
     emit(ChatsLoadingState(isLoading));
+  }
+
+
+  void startPeriodicUpdate() {
+    Timer.periodic(const Duration(seconds: 5), (timer) {
+      loadChats();
+    });
   }
 }
 
@@ -45,9 +56,7 @@ class ChatsLoadingState extends ChatState {
 }
 
 class ChatsLoaded extends ChatState {
-  final List<String> users;
-  final List<String> images;
-  final List<String> messages;
+  final List<ChatMessage> chatMessages;
 
-  ChatsLoaded(this.users, this.images, this.messages);
+  ChatsLoaded(this.chatMessages);
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'PremiumScreen.dart';
@@ -24,10 +26,15 @@ class ShowStoryScreen extends StatelessWidget {
                 height: MediaQuery.sizeOf(context).height,
                 child: Hero(
                   tag: 'image${data['name']}',
-                  child: Image.network(
-                    data['image'],
-                    fit: BoxFit.cover,
-                  ),
+                  child: data['image'].contains("data/user")
+                      ? Image.file(
+                          File(data['image']),
+                          fit: BoxFit.fill,
+                        )
+                      : Image.network(
+                          data['image'],
+                          fit: BoxFit.fill,
+                        ),
                 ),
               ),
               Align(
@@ -39,7 +46,8 @@ class ShowStoryScreen extends StatelessWidget {
                         color: Colors.black.withOpacity(0.2), // color of shadow
                         spreadRadius: 5, // spread radius
                         blurRadius: 7, // blur radius
-                        offset: const Offset(0, 2), // changes position of shadow
+                        offset:
+                            const Offset(0, 2), // changes position of shadow
                       )
                     ],
                   ),
@@ -68,7 +76,8 @@ class ShowStoryScreen extends StatelessWidget {
                         onPressed: () {
                           Navigator.pop(context);
                         },
-                        icon: const Icon(Icons.close, color: Colors.white, size: 32),
+                        icon: const Icon(Icons.close,
+                            color: Colors.white, size: 32),
                       ),
                     ],
                   ),
@@ -83,7 +92,8 @@ class ShowStoryScreen extends StatelessWidget {
                         color: Colors.black.withOpacity(0.2), // color of shadow
                         spreadRadius: 5, // spread radius
                         blurRadius: 7, // blur radius
-                        offset: const Offset(0, 2), // changes position of shadow
+                        offset:
+                            const Offset(0, 2), // changes position of shadow
                       )
                     ],
                   ),
@@ -102,7 +112,7 @@ class ShowStoryScreen extends StatelessWidget {
                               enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(color: Colors.white),
                                   borderRadius:
-                                  BorderRadius.all(Radius.circular(24)))),
+                                      BorderRadius.all(Radius.circular(24)))),
                         ),
                       ),
                       IconButton(

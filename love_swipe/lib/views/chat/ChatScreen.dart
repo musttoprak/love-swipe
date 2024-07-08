@@ -2,33 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:love_swipe/views/chat/ChatPageBody.dart';
 
 import '../../constants/app_colors.dart';
+import '../../models/ChatMessage.dart';
 import '../../models/UserModel.dart';
-import '../PremiumScreen.dart';
+import '../components/PremiumScreen.dart';
 
 class Chatting extends StatefulWidget {
-  final String user;
-  final String message;
-  final String image;
-  final int id;
+  final ChatMessage user;
 
-  const Chatting(this.user, this.message, this.image, this.id, {super.key});
+  const Chatting(this.user, {super.key});
 
   @override
   _ChattingState createState() => _ChattingState();
 }
 
 class _ChattingState extends State<Chatting> {
-  late final int id;
-  late final String user;
-  late final String message;
-  late final String image;
 
+  late final ChatMessage user;
   @override
   void initState() {
-    id = widget.id;
     user = widget.user;
-    message = widget.message;
-    image = widget.image;
     super.initState();
   }
 
@@ -36,7 +28,7 @@ class _ChattingState extends State<Chatting> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: buildAppBar(),
-      body: ChatPageBody(user, message, image, id),
+      body: ChatPageBody(user),
     );
   }
 
@@ -57,7 +49,7 @@ class _ChattingState extends State<Chatting> {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundImage: NetworkImage(image.trim()),
+                backgroundImage: NetworkImage(user.image.trim()),
               ),
               Positioned(
                 right: 0,
@@ -78,7 +70,7 @@ class _ChattingState extends State<Chatting> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                user,
+                user.user,
                 style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,

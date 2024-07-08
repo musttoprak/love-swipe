@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:love_swipe/views/HomeScreen.dart';
-import 'package:love_swipe/views/LoginScreen.dart';
+import 'package:love_swipe/views/auth/LoginScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../components/already_have_an_account_check.dart';
-import '../constants/constants.dart';
-import '../services/UserService.dart';
+import '../../components/already_have_an_account_check.dart';
+import '../../constants/constants.dart';
+import '../../services/UserService.dart';
+
 
 class SignUpScreen extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();

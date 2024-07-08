@@ -80,6 +80,23 @@ class UserService {
     return digest.toString(); // Hashlenmiş şifreyi string olarak döndürün
   }
 
+  Future<void> updateUser(int userId, String newUsername, String newEmail, String newBiography) async {
+    MySqlConnection connection = await _db.connect();
+
+    await connection.query('''
+    UPDATE users
+    SET username = ?, email = ?, biography = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  ''', [
+      newUsername,
+      newEmail,
+      newBiography,
+      userId,
+    ]);
+
+    await _db.close(connection);
+  }
+
 
   Future<void> updateUsername(int userId, String newUsername) async {
     MySqlConnection connection = await _db.connect();

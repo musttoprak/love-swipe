@@ -8,9 +8,6 @@ class ShuffleCubit extends Cubit<ShuffleState> {
   final StoryService _storyService = StoryService();
   List<StoryModel> stories = [];
   bool isLoading = false;
-  bool isLoadingMore = false;
-  int pageSize = 15;
-  int currentPage = 1;
 
   ShuffleCubit() : super(ShuffleInitialState()) {
     fetchStories();
@@ -19,7 +16,7 @@ class ShuffleCubit extends Cubit<ShuffleState> {
   Future<void> fetchStories() async {
     try {
       changeLoadingView();
-      var fetchedStories = await _storyService.getPaginatedStories(pageSize, currentPage);
+      var fetchedStories = await _storyService.getRandomUser(limit: 12);
       stories.addAll(fetchedStories);
       changeLoadingView();
     } catch (e) {
@@ -27,25 +24,9 @@ class ShuffleCubit extends Cubit<ShuffleState> {
     }
   }
 
-  Future<void> fetchMoreStories() async {
-    try {
-      changeLoadingMoreView(stories);
-      currentPage++;
-      var fetchedStories = await _storyService.getPaginatedStories(pageSize, currentPage);
-      stories.addAll(fetchedStories);
-      changeLoadingMoreView(stories);
-    } catch (e) {
-      print('Error fetching more stories: $e');
-    }
-  }
-
   void changeLoadingView() {
     isLoading = !isLoading;
     emit(ShuffleLoadingState(isLoading));
-  }
-  void changeLoadingMoreView(List<StoryModel> stories) {
-    isLoadingMore = !isLoadingMore;
-    emit(ShuffleLoadingMoreState(isLoadingMore,stories));
   }
 }
 
@@ -57,9 +38,4 @@ class ShuffleLoadingState extends ShuffleState {
   final bool isLoading;
 
   ShuffleLoadingState(this.isLoading);
-}
-class ShuffleLoadingMoreState extends ShuffleState {
-  final bool isLoadingMore;
-  final  List<StoryModel> stories;
-  ShuffleLoadingMoreState(this.isLoadingMore,this.stories);
 }

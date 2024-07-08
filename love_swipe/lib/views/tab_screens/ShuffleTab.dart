@@ -4,7 +4,7 @@ import 'package:love_swipe/components/display_widget.dart';
 import 'package:love_swipe/constants/app_colors.dart';
 import '../../cubit/ShuffleCubit.dart';
 import '../../models/StoryModel.dart';
-import '../PremiumScreen.dart';
+import '../components/PremiumScreen.dart';
 
 class ShuffleTab extends StatefulWidget {
   const ShuffleTab({super.key});
@@ -14,12 +14,6 @@ class ShuffleTab extends StatefulWidget {
 }
 
 class _ShuffleTabState extends State<ShuffleTab> with ShuffleMixin {
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -38,24 +32,7 @@ class _ShuffleTabState extends State<ShuffleTab> with ShuffleMixin {
 }
 
 mixin ShuffleMixin {
-  final ScrollController _scrollController = ScrollController();
-
-  void _onScroll(BuildContext context) {
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
-      bool isLoadingMore = context.read<ShuffleCubit>().isLoadingMore;
-      if (!isLoadingMore) {
-        context.read<ShuffleCubit>().fetchMoreStories();
-      }
-    }
-  }
-
   Scaffold buildScaffold(BuildContext context) {
-    _scrollController.addListener(
-      () {
-        _onScroll(context);
-      },
-    );
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -64,30 +41,12 @@ mixin ShuffleMixin {
         ),
       ),
       body: ListView.builder(
-        controller: _scrollController,
         itemCount: context.watch<ShuffleCubit>().stories.length,
         itemBuilder: (context, index) {
-          if (context.read<ShuffleCubit>().stories.length == index + 1) {
-            return Column(
-              children: [
-                buildStoryItem(
-                  context,
-                  context.read<ShuffleCubit>().stories[index],
-                ),
-                Visibility(
-                  visible: context.watch<ShuffleCubit>().isLoadingMore,
-                  child: const Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                ),
-              ],
-            );
-          } else {
-            return buildStoryItem(
-              context,
-              context.read<ShuffleCubit>().stories[index],
-            );
-          }
+          return buildStoryItem(
+            context,
+            context.read<ShuffleCubit>().stories[index],
+          );
         },
       ),
     );

@@ -5,14 +5,15 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:love_swipe/constants/app_colors.dart';
 import 'package:love_swipe/services/LocalNotifications.dart';
 import 'package:love_swipe/views/HomeScreen.dart';
-import 'package:love_swipe/views/LoginScreen.dart';
+import 'package:love_swipe/views/auth/LoginScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 const String taskName = "sendNotification";
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-FlutterLocalNotificationsPlugin();
+    FlutterLocalNotificationsPlugin();
+
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     if (task == taskName) {
@@ -21,19 +22,22 @@ void callbackDispatcher() {
     return Future.value(true);
   });
 }
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-  await LocalNotifications.init();
-  Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
-  Workmanager().registerPeriodicTask(
-    DateTime.now().second.toString(),
-    taskName,
-    frequency: const Duration(minutes: 1),
-  );
-
+  bool runingNotification = prefs.getBool('runingNotification') ?? false;
+  if(!runingNotification){
+    await LocalNotifications.init();
+    Workmanager().initialize(callbackDispatcher);
+    Workmanager().registerPeriodicTask(
+      DateTime.now().second.toString(),
+      taskName,
+      frequency: const Duration(minutes: 1),
+    );
+  }
   runApp(MyApp(isLoggedIn: isLoggedIn));
 }
 

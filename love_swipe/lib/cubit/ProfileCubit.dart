@@ -4,15 +4,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/UserModel.dart';
 import '../services/UserService.dart';
-import '../views/LoginScreen.dart';
+import '../views/auth/LoginScreen.dart';
 
-class ProfileCubit  extends Cubit<ProfileState> {
+class ProfileCubit extends Cubit<ProfileState> {
   bool isLoading = false;
   BuildContext context;
   UserService userService = UserService();
   UserModel? user;
+  final formkey;
+  TextEditingController nameController;
+  TextEditingController emailController;
+  TextEditingController biographyController;
 
-  ProfileCubit(this.context) : super(ProfileInitialState()) {
+  ProfileCubit(this.context, this.formkey, this.nameController,
+      this.emailController, this.biographyController)
+      : super(ProfileInitialState()) {
     getProfile();
   }
 
@@ -23,9 +29,12 @@ class ProfileCubit  extends Cubit<ProfileState> {
     print(email);
     if (email != null) {
       user = await userService.getUserByEmail(email);
+      nameController.text = user!.username;
+      emailController.text = user!.email;
+      biographyController.text = user!.biography;
       changeLoadingView();
       emit(ProfileLoadedState(user));
-    }else {
+    } else {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setBool('isLoggedIn', false);
       prefs.remove('email');
@@ -33,6 +42,22 @@ class ProfileCubit  extends Cubit<ProfileState> {
         context,
         MaterialPageRoute(builder: (context) => LoginScreen()),
       );
+    }
+  }
+
+  Future<void> updateProfile() async {
+
+    if (true) {
+      UserService userService = UserService();
+      await userService.updateUser(user!.id, nameController.text,
+          emailController.text, biographyController.text);
+      user!.username = nameController.text;
+      user!.email = emailController.text;
+      user!.biography = biographyController.text;
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('email',emailController.text.trim());
+      print("güncellendi");
+      emit(ProfileLoadedState(user));
     }
   }
 

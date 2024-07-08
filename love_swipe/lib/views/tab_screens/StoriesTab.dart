@@ -1,12 +1,16 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:love_swipe/views/PremiumScreen.dart';
-
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path/path.dart' as p;
 import '../../cubit/StoriesCubit.dart';
 import '../../models/StoryModel.dart';
-import '../AddStory.dart';
-import '../ShowStoryScreen.dart';
+import '../components/AddStory.dart';
+import '../components/PremiumScreen.dart';
+import '../components/ShowStoryScreen.dart';
 
 class StoriesTab extends StatefulWidget {
   const StoriesTab({super.key});
@@ -25,8 +29,7 @@ class _StoriesTabState extends State<StoriesTab> with StoriesMixin {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) =>
-          StoriesCubit()..fetchStories(), // Initialize and fetch stories
+      create: (context) => StoriesCubit(), // Initialize and fetch stories
       child: BlocBuilder<StoriesCubit, StoriesState>(
         builder: (context, state) {
           if (state is StoriesLoadingState && state.isLoading) {
@@ -108,15 +111,29 @@ mixin StoriesMixin {
 
   Widget buildShareYourStoryItem(BuildContext context) {
     return InkWell(
-      onTap: () {
-        // eğer ilk defa paylaşıyorsa izin ver fazla ise premium sayfasına at
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            //builder: (context) => const AddStory(),
-            builder: (context) => PremiumScreen(),
-          ),
-        );
+      onTap: () async {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        bool isFirstStory = prefs.getBool('isFirstStory') ?? true;
+        if (isFirstStory) {
+          String? uri = await showImagePickerOption(context);
+          if (uri != null) {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AddStory(uri),
+              ),
+            );
+            await context.read<StoriesCubit>().fetchStories();
+            await prefs.setBool('isFirstStory', false);
+          }
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PremiumScreen(),
+            ),
+          );
+        }
       },
       child: Container(
         width: MediaQuery.of(context).size.width / 3,
@@ -127,10 +144,10 @@ mixin StoriesMixin {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(
-                Icons.add,
-                size: 48,
-                color: Colors.black,
-              ),
+              Icons.add,
+              size: 48,
+              color: Colors.black,
+            ),
             Container(
               padding: const EdgeInsets.all(4),
               width: MediaQuery.of(context).size.width / 3,
@@ -155,6 +172,77 @@ mixin StoriesMixin {
     );
   }
 
+  Future<String?> showImagePickerOption(BuildContext context) async {
+    return await showModalBottomSheet(
+        backgroundColor: Colors.blue[100],
+        context: context,
+        builder: (builder) {
+          return Padding(
+            padding: const EdgeInsets.all(18.0),
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height / 4.5,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () async {
+                        String? uri =
+                            await _pickImageFrom(context, ImageSource.gallery);
+                        Navigator.pop(context, uri);
+                      },
+                      child: const SizedBox(
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.image,
+                              size: 70,
+                            ),
+                            Text("Gallery")
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () async {
+                        String? uri =
+                            await _pickImageFrom(context, ImageSource.camera);
+                        Navigator.pop(context, uri);
+                      },
+                      child: const SizedBox(
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.camera_alt,
+                              size: 70,
+                            ),
+                            Text("Camera")
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  Future<String?> _pickImageFrom(
+      BuildContext context, ImageSource source) async {
+    final returnImage = await ImagePicker().pickImage(source: source);
+    if (returnImage == null) return null;
+    File file = File(returnImage.path);
+    Directory appDir = await getApplicationDocumentsDirectory();
+    String fileName = p.basename(returnImage.path);
+    String newFilePath = p.join(appDir.path, fileName);
+    File newFile = await file.copy(newFilePath);
+    return newFile.path.toString();
+  }
+
   Widget buildStoryItem(BuildContext context, StoryModel story) {
     return InkWell(
       onTap: () {
@@ -177,10 +265,15 @@ mixin StoriesMixin {
               height: MediaQuery.of(context).size.height * .25,
               child: Hero(
                 tag: "image${story.user.id}", // Use userId as tag
-                child: Image.network(
-                  story.photoUrl,
-                  fit: BoxFit.fill,
-                ),
+                child: story.photoUrl.contains("data/user")
+                    ? Image.file(
+                        File(story.photoUrl),
+                        fit: BoxFit.fill,
+                      )
+                    : Image.network(
+                        story.photoUrl,
+                        fit: BoxFit.fill,
+                      ),
               ),
             ),
           ),

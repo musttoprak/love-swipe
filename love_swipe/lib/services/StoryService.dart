@@ -130,4 +130,28 @@ class StoryService {
     }
     return stories;
   }
+
+  Future<List<StoryModel>> getRandomUser({int limit = 1}) async {
+    MySqlConnection connection = await _db.connect();
+
+    var result = await connection.query('''
+    SELECT * FROM stories ORDER BY RAND() LIMIT ?
+  ''', [
+      limit,
+    ]);
+
+    await _db.close(connection);
+    List<StoryModel> stories = [];
+    for (var row in result) {
+      var user = await _getUserById(row['user_id']);
+      stories.add(StoryModel(
+        id: row['id'],
+        user: user!,
+        photoUrl: row['photo_url'],
+        createdAt: row['created_at'],
+        updatedAt: row['updated_at'],
+      ));
+    }
+    return stories;
+  }
 }
