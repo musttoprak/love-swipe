@@ -17,7 +17,9 @@ import '../../models/UserModel.dart';
 import '../auth/LoginScreen.dart';
 
 class ProfileTab extends StatefulWidget {
-  const ProfileTab({super.key});
+  final VoidCallback toggleTheme;
+
+  const ProfileTab({super.key, required this.toggleTheme});
 
   @override
   State<ProfileTab> createState() => _ProfileTabState();
@@ -25,10 +27,16 @@ class ProfileTab extends StatefulWidget {
 
 class _ProfileTabState extends State<ProfileTab> with ProfileMixin {
   @override
+  void initState() {
+    toggleTheme = widget.toggleTheme;
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => ProfileCubit(context, formkey, nameController,
-          emailController, biographyController),
+          emailController, biographyController, toggleTheme),
       child: BlocBuilder<ProfileCubit, ProfileState>(
         builder: (context, state) {
           if (state is ProfileLoadingState && state.isLoading) {
@@ -74,6 +82,7 @@ mixin ProfileMixin {
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController biographyController = TextEditingController();
+  late final VoidCallback toggleTheme;
 
   Scaffold buildScaffold(BuildContext context, UserModel user) {
     return Scaffold(
@@ -83,32 +92,45 @@ mixin ProfileMixin {
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: InkWell(
-              onTap: () async {
+          PopupMenuButton<String>(
+            onSelected: (String result) async {
+              if (result == 'toggleTheme') {
+                toggleTheme();
+              } else if (result == 'logout') {
                 SharedPreferences prefs = await SharedPreferences.getInstance();
                 prefs.setBool('isLoggedIn', false);
                 prefs.remove('email');
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => LoginScreen(toggleTheme: toggleTheme),
+                  ),
                 );
-              },
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.pErrorColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.exit_to_app,
-                  color: Colors.white,
-                  size: 18,
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'toggleTheme',
+                child: Row(
+                  children:  [
+                    Icon(Icons.brightness_6),
+                    SizedBox(width: 8),
+                    Text('Tema Değiştir'),
+                  ],
                 ),
               ),
-            ),
-          )
+              const PopupMenuItem<String>(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.exit_to_app),
+                    SizedBox(width: 8),
+                    Text('Çıkış Yap'),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -116,6 +138,7 @@ mixin ProfileMixin {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            SizedBox(height: MediaQuery.sizeOf(context).height * .05,),
             InkWell(
               onTap: () async {
                 await navigateSecondPage(context, EditImagePage(user));
@@ -160,7 +183,7 @@ mixin ProfileMixin {
                     width: MediaQuery.sizeOf(context).width * .8,
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.greenColor,
+                      color: AppColors.pinkColor,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Row(
@@ -175,7 +198,10 @@ mixin ProfileMixin {
                         SizedBox(
                           width: 16,
                         ),
-                        Text("Güncelle",style: TextStyle(color: Colors.white),),
+                        Text(
+                          "Güncelle",
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ],
                     )),
               ),

@@ -81,7 +81,7 @@ mixin ShuffleMixin {
         ),
         trailing: const Icon(
           Icons.diamond,
-          color: AppColors.greenColor,
+          color: AppColors.pinkColor,
         ),
       ),
     );

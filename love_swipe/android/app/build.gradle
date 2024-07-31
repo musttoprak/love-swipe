@@ -23,8 +23,8 @@ if (flutterVersionName == null) {
     flutterVersionName = "1.0"
 }
 
-android {
-    namespace = "com.example.love_swipe"
+android { 
+    namespace = "com.love.swipe"
     compileSdk = 34
     ndkVersion = flutter.ndkVersion
 
@@ -36,12 +36,12 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.love_swipe"
+        applicationId = "com.love.swipe"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = flutterVersionCode.toInteger()
+        versionCode = 2
         versionName = flutterVersionName
         multiDexEnabled = true
     }

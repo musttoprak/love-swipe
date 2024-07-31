@@ -44,18 +44,19 @@ class _AddStoryState extends State<AddStory> {
                   SharedPreferences prefs =
                       await SharedPreferences.getInstance();
                   await prefs.setString('sharedStoryPath', widget.uri);
+                  await prefs.setBool('isFirstStory', false);
                   Navigator.pop(context);
                 },
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       "Paylaş",
-                      style: TextStyle(color: Colors.black),
+                      style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black),
                     ),
                     Icon(
                       Icons.keyboard_arrow_right,
-                      color: Colors.black,
+                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
                     ),
                   ],
                 ),

@@ -1,5 +1,4 @@
 import '../models/Chat.dart';
-import '../models/ChatMessage.dart';
 
 List<Chat> chatsData = [
   Chat(

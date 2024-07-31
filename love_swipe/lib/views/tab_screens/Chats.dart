@@ -22,7 +22,7 @@ class _ChatsState extends State<Chats> {
       create: (context) => ChatCubit(),
       child: BlocBuilder<ChatCubit, ChatState>(
         builder: (context, state) {
-          return buildScaffold(context, AppColors.pPrimaryColor, Colors.white);
+          return buildScaffold(context, AppColors.pPrimaryColor,Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white);
         },
       ),
     );
@@ -77,7 +77,7 @@ class _ChatsState extends State<Chats> {
                         children: [
                           CircleAvatar(
                             radius: 30.0,
-                            backgroundImage: NetworkImage(user.image.trim()),
+                            backgroundImage: NetworkImage(user.image_user.trim()),
                           ),
                           const SizedBox(
                             height: 6.0,
@@ -101,100 +101,108 @@ class _ChatsState extends State<Chats> {
                 onRefresh: () async {
                   await context.read<ChatCubit>().loadChats();
                 },
-                child: ListView.builder(
-                  itemCount: context.watch<ChatCubit>().chatMessages.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    ChatMessage user =
-                        context.watch<ChatCubit>().chatMessages[index];
-                    return InkWell(
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => Chatting(user)));
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: AppColors.pDefaultPadding,
-                            vertical: AppColors.pDefaultPadding * 0.75),
-                        child: Row(
-                          children: [
-                            Stack(
-                              children: [
-                                CircleAvatar(
-                                  radius: 25,
-                                  backgroundImage:
-                                      NetworkImage(user.image.trim()),
-                                ),
-                                if (true)
-                                  Positioned(
-                                    right: 0,
-                                    bottom: 0,
-                                    child: Container(
-                                      width: 15,
-                                      height: 15,
-                                      decoration: BoxDecoration(
-                                          color: Colors.green,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: Theme.of(context)
-                                                .scaffoldBackgroundColor,
-                                            width: 3,
-                                          )),
-                                    ),
-                                  )
-                              ],
-                            ),
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: AppColors.pDefaultPadding),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      user.user.split(" /")[0],
-                                      style: const TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600),
-                                    ),
-                                    Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.bolt,
-                                          color: Colors.grey,
-                                          size: 16,
-                                        ),
-                                        Text(
-                                          user.user.split(" /")[2],
-                                          style: const TextStyle(fontSize: 15),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(
-                                      height: 8,
-                                    ),
-                                    Opacity(
-                                      opacity: 0.7,
-                                      child: Text(
-                                        user.message,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                child: context.watch<ChatCubit>().chatMessages.length == 0
+                    ? const Center(
+                        child: Text("Şu an bir mesajınız bulunmamaktadır."),
+                      )
+                    : ListView.builder(
+                        itemCount:
+                            context.watch<ChatCubit>().chatMessages.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          ChatMessage user =
+                              context.watch<ChatCubit>().chatMessages[index];
+                          return InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => Chatting(user)));
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: AppColors.pDefaultPadding,
+                                  vertical: AppColors.pDefaultPadding * 0.75),
+                              child: Row(
+                                children: [
+                                  Stack(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 25,
+                                        backgroundImage:
+                                            NetworkImage(user.image_user.trim()),
+                                      ),
+                                      if (true)
+                                        Positioned(
+                                          right: 0,
+                                          bottom: 0,
+                                          child: Container(
+                                            width: 15,
+                                            height: 15,
+                                            decoration: BoxDecoration(
+                                                color: Colors.green,
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                  color: Theme.of(context)
+                                                      .scaffoldBackgroundColor,
+                                                  width: 3,
+                                                )),
+                                          ),
+                                        )
+                                    ],
+                                  ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal:
+                                              AppColors.pDefaultPadding),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            user.user.split(" /")[0],
+                                            style: const TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w600),
+                                          ),
+                                          Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.bolt,
+                                                color: Colors.grey,
+                                                size: 16,
+                                              ),
+                                              Text(
+                                                user.user.split(" /")[2],
+                                                style: const TextStyle(
+                                                    fontSize: 15),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(
+                                            height: 8,
+                                          ),
+                                          Opacity(
+                                            opacity: 0.7,
+                                            child: Text(
+                                              user.message,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  Opacity(
+                                      opacity: 0.7,
+                                      child: Text(user.user.split(" /")[1]))
+                                ],
                               ),
                             ),
-                            Opacity(
-                                opacity: 0.7,
-                                child: Text(user.user.split(" /")[1]))
-                          ],
-                        ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
               ),
             ),
           ],

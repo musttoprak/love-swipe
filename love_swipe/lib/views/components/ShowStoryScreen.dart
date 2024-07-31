@@ -20,118 +20,114 @@ class ShowStoryScreen extends StatelessWidget {
             Navigator.pop(context);
           },
           child: Stack(
+            fit: StackFit.expand,
             children: [
-              SizedBox(
-                width: MediaQuery.sizeOf(context).width,
-                height: MediaQuery.sizeOf(context).height,
+              // Image
+              Positioned.fill(
                 child: Hero(
                   tag: 'image${data['name']}',
                   child: data['image'].contains("data/user")
                       ? Image.file(
                           File(data['image']),
-                          fit: BoxFit.fill,
+                          fit: BoxFit.fitWidth,
                         )
                       : Image.network(
                           data['image'],
-                          fit: BoxFit.fill,
+                          fit: BoxFit.fitWidth,
                         ),
                 ),
               ),
-              Align(
-                alignment: Alignment.topCenter,
-                child: Container(
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2), // color of shadow
-                        spreadRadius: 5, // spread radius
-                        blurRadius: 7, // blur radius
-                        offset:
-                            const Offset(0, 2), // changes position of shadow
-                      )
-                    ],
-                  ),
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
+              // Content
+              Column(
+                children: [
+                  // Top bar
+                  SafeArea(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.black54, Colors.transparent],
+                        ),
+                      ),
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const CircleAvatar(
-                            radius: 24,
-                            backgroundImage: NetworkImage(
-                                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUvYaJOC1XJEMneXwSLCUizp-FaD-75JIxkg&s"),
+                          Row(
+                            children: [
+                              const CircleAvatar(
+                                radius: 24,
+                                backgroundImage: NetworkImage(
+                                    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUvYaJOC1XJEMneXwSLCUizp-FaD-75JIxkg&s"),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                data['name'],
+                                style: const TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 12),
-                          Text(
-                            data['name'],
-                            style: const TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
+                          IconButton(
+                            onPressed: () => Navigator.pop(context),
+                            icon: const Icon(Icons.close,
+                                color: Colors.white, size: 32),
                           ),
                         ],
                       ),
-                      IconButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        icon: const Icon(Icons.close,
-                            color: Colors.white, size: 32),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2), // color of shadow
-                        spreadRadius: 5, // spread radius
-                        blurRadius: 7, // blur radius
-                        offset:
-                            const Offset(0, 2), // changes position of shadow
-                      )
-                    ],
-                  ),
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      const Expanded(
-                        child: TextField(
-                          decoration: InputDecoration(
-                              hintText: 'Mesajınızı buraya yazın',
-                              border: OutlineInputBorder(),
-                              hintStyle: TextStyle(color: Colors.white),
-                              fillColor: Colors.white,
-                              focusColor: Colors.white,
-                              hoverColor: Colors.white,
-                              enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.white),
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(24)))),
+                  // Flexible space
+                  Expanded(child: SizedBox()),
+                  // Bottom bar
+                  SafeArea(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [Colors.black54, Colors.transparent],
                         ),
                       ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.send,
-                          color: Colors.white,
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => PremiumScreen(),
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              decoration: InputDecoration(
+                                hintText: 'Mesajınızı buraya yazın',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(24),
+                                  borderSide: BorderSide.none,
+                                ),
+                                filled: true,
+                                fillColor: Colors.white.withOpacity(0.2),
+                                hintStyle: TextStyle(color: Colors.white70),
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 8),
+                              ),
+                              style: TextStyle(color: Colors.white),
                             ),
-                          );
-                        },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.send, color: Colors.white),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const PremiumScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ),

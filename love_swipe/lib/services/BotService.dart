@@ -35,7 +35,7 @@ class BotService {
     await _db.close(connection);
     List<String> messages = [];
     for (var row in result) {
-      messages.add(row['tag']);
+      messages.add(row['message']);
     }
     return messages;
   }

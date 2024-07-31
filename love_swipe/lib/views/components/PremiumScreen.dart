@@ -1,11 +1,85 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
-class PremiumScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
+
+import '../../constants/app_colors.dart';
+
+class PremiumScreen extends StatefulWidget {
+  const PremiumScreen({super.key});
+
+  @override
+  State<PremiumScreen> createState() => _PremiumScreenState();
+}
+
+InAppPurchase _inAppPurchase = InAppPurchase.instance;
+late StreamSubscription<dynamic> _streamSubscription;
+List<ProductDetails> _products = [];
+const _variant = {"love-swipe just once", "love-swipe yearly"};
+
+class _PremiumScreenState extends State<PremiumScreen> {
   final String mainImageUrl = 'assets/pay/background_pay.png';
+
   final String image1Url = 'assets/pay/tac_pay.png';
+
   final String image2Url = 'assets/pay/love_swap_pay.png';
+
   final String image3Url = 'assets/pay/premium_pay.png';
+
   final String image4Url = 'assets/pay/text_pay.png';
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    Stream purchaseUpdated = InAppPurchase.instance.purchaseStream;
+    _streamSubscription = purchaseUpdated.listen((purchaseList) {
+      _listenToPurchase(purchaseList, context);
+    }, onDone: () {
+      _streamSubscription.cancel();
+    }, onError: (error) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Error")));
+    });
+    initStore();
+  }
+
+  initStore() async {
+    ProductDetailsResponse productDetailsResponse =
+        await _inAppPurchase.queryProductDetails(_variant);
+    print("productDetailsResponse.error");
+    print(productDetailsResponse.error);
+    if (productDetailsResponse.error == null) {
+      setState(() {
+        _products = productDetailsResponse.productDetails;
+        print("_products set state");
+        print(_products);
+      });
+    }
+  }
+
+  _listenToPurchase(
+      List<PurchaseDetails> purchaseDetailsList, BuildContext context) {
+    purchaseDetailsList.forEach((PurchaseDetails purchaseDetails) async {
+      if (purchaseDetails.status == PurchaseStatus.pending) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("Pending")));
+      } else if (purchaseDetails.status == PurchaseStatus.error) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("Error")));
+      } else if (purchaseDetails.status == PurchaseStatus.purchased) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("Purchased")));
+      }
+    });
+  }
+
+  _buy(int which) {
+    print("_products");
+    print(_products);
+    final PurchaseParam param = PurchaseParam(productDetails: _products[which]);
+    _inAppPurchase.buyConsumable(purchaseParam: param);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +98,10 @@ class PremiumScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                icon: Icon(Icons.arrow_back,color: Colors.white,),
+                icon: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                ),
               ),
             ),
             SafeArea(
@@ -71,70 +148,92 @@ class PremiumScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          InkWell(
-                            onTap: () {
-                              print("99.99tl ödeme");
-                            },
-                            child: Container(
-                              padding: EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).cardColor,
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                                color: Colors.white,
                                 borderRadius: BorderRadius.circular(24),
-                              ),
-                              child: Column(
-                                children: [
-                                  const Text(
-                                    'Aylık\n99.99₺',
-                                    textAlign: TextAlign.center,
+                                boxShadow: [
+                                  BoxShadow(
+                                    offset: const Offset(0, 4),
+                                    blurRadius: 40,
+                                    color: Colors.grey.withOpacity(0.2),
+                                  ),
+                                ],
+                                border: Border.all(
+                                    color: Colors.grey, width: .5)),
+                            child: Column(
+                              children: [
+                                const Text(
+                                  'Aylık\n99.99₺',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    _buy(0);
+                                    print("99.99tl ödeme");
+                                  },
+                                  style: const ButtonStyle(
+                                    backgroundColor:
+                                        WidgetStatePropertyAll(Colors.white),
+                                  ),
+                                  child: const Text(
+                                    'Satın Alın',
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 16),
                                   ),
-                                  ElevatedButton(
-                                    onPressed: () {},
-                                    child: const Text(
-                                      'Satın Alın',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
-                          InkWell(
-                            onTap: () {
-                              print("49.99tl/ay ödeme");
-                            },
-                            child: Container(
-                              padding: EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).cardColor,
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                                color: Colors.white,
                                 borderRadius: BorderRadius.circular(24),
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  const Text(
-                                    'Yıllık\n49.99₺/ay',
-                                    textAlign: TextAlign.center,
+                                boxShadow: [
+                                  BoxShadow(
+                                    offset: const Offset(0, 4),
+                                    blurRadius: 40,
+                                    color: Colors.grey.withOpacity(0.2),
+                                  ),
+                                ],
+                                border: Border.all(
+                                    color: Colors.grey, width: .5)),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  'Yıllık\n49.99₺/ay',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    _buy(1);
+                                    print("49.99tl/ay ödeme");
+                                  },
+                                  style: const ButtonStyle(
+                                    backgroundColor:
+                                        WidgetStatePropertyAll(Colors.white),
+                                  ),
+                                  child: const Text(
+                                    'Satın Alın',
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 16),
                                   ),
-                                  ElevatedButton(
-                                    onPressed: () {},
-                                    child: const Text(
-                                      'Satın Alın',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ],

@@ -15,9 +15,9 @@ class ProfileCubit extends Cubit<ProfileState> {
   TextEditingController nameController;
   TextEditingController emailController;
   TextEditingController biographyController;
-
+  final VoidCallback toggleTheme;
   ProfileCubit(this.context, this.formkey, this.nameController,
-      this.emailController, this.biographyController)
+      this.emailController, this.biographyController,this.toggleTheme)
       : super(ProfileInitialState()) {
     getProfile();
   }
@@ -26,7 +26,6 @@ class ProfileCubit extends Cubit<ProfileState> {
     changeLoadingView();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? email = prefs.getString('email');
-    print(email);
     if (email != null) {
       user = await userService.getUserByEmail(email);
       nameController.text = user!.username;
@@ -40,14 +39,14 @@ class ProfileCubit extends Cubit<ProfileState> {
       prefs.remove('email');
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
+        MaterialPageRoute(builder: (context) => LoginScreen(toggleTheme: toggleTheme,)),
       );
     }
   }
 
   Future<void> updateProfile() async {
 
-    if (true) {
+    if (nameController.text.trim().isNotEmpty && emailController.text.trim().isNotEmpty && biographyController.text.trim().isNotEmpty) {
       UserService userService = UserService();
       await userService.updateUser(user!.id, nameController.text,
           emailController.text, biographyController.text);
@@ -57,6 +56,19 @@ class ProfileCubit extends Cubit<ProfileState> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString('email',emailController.text.trim());
       print("güncellendi");
+      const snackBar = SnackBar(
+        content: Text('Güncelleme işlemi başarılı bir şekilde gerçekleştirildi.'),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      emit(ProfileLoadedState(user));
+    }else{
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Lütfen tüm alanları doğru şekilde doldurun.',style: TextStyle(color: Colors.white),),
+          backgroundColor: Colors.red,
+        ),
+      );
       emit(ProfileLoadedState(user));
     }
   }

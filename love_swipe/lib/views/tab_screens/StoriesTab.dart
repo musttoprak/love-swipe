@@ -124,7 +124,6 @@ mixin StoriesMixin {
               ),
             );
             await context.read<StoriesCubit>().fetchStories();
-            await prefs.setBool('isFirstStory', false);
           }
         } else {
           Navigator.push(
@@ -143,23 +142,23 @@ mixin StoriesMixin {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.add,
               size: 48,
-              color: Colors.black,
+              color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
             ),
             Container(
               padding: const EdgeInsets.all(4),
               width: MediaQuery.of(context).size.width / 3,
-              child: const Column(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     "X10 Kat daha fazla görüntülenme",
                     style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.black,
+                      fontSize: 12,
+                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -174,14 +173,14 @@ mixin StoriesMixin {
 
   Future<String?> showImagePickerOption(BuildContext context) async {
     return await showModalBottomSheet(
-        backgroundColor: Colors.blue[100],
+        backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white,
         context: context,
         builder: (builder) {
           return Padding(
             padding: const EdgeInsets.all(18.0),
             child: SizedBox(
               width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height / 4.5,
+              height: MediaQuery.of(context).size.height * .15,
               child: Row(
                 children: [
                   Expanded(

@@ -1,4 +1,4 @@
-package com.example.love_swipe
+package com.love.swipe
 
 import io.flutter.embedding.android.FlutterActivity
 

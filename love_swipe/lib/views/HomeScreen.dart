@@ -13,7 +13,9 @@ import 'tab_screens/ShuffleTab.dart';
 import 'tab_screens/StoriesTab.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final VoidCallback toggleTheme;
+
+  const HomeScreen({super.key, required this.toggleTheme});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -21,13 +23,22 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  late final VoidCallback toggleTheme;
+  late final List<Widget> _tabs;
 
-  final List<Widget> _tabs = [
-    const StoriesTab(),
-    const Chats(),
-    const ShuffleTab(),
-    const ProfileTab(),
-  ];
+  @override
+  void initState() {
+    toggleTheme = widget.toggleTheme;
+    _tabs = [
+      const StoriesTab(),
+      const Chats(),
+      const ShuffleTab(),
+      ProfileTab(
+        toggleTheme: toggleTheme,
+      ),
+    ];
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,10 +50,10 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         backgroundColor: Colors.white,
-        selectedIconTheme: const IconThemeData(color: AppColors.greenColor),
+        selectedIconTheme: const IconThemeData(color: AppColors.pinkColor),
         selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-        unselectedIconTheme: const IconThemeData(color: Colors.black),
-        selectedItemColor: AppColors.greenColor,
+        unselectedIconTheme:  IconThemeData(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black),
+        selectedItemColor: AppColors.pinkColor,
         onTap: (index) {
           setState(() {
             _currentIndex = index;

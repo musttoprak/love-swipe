@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../models/ChatMessage.dart';
 import '../components/PremiumScreen.dart';
+
 class ChatPageBody extends StatefulWidget {
   final ChatMessage user;
 
@@ -24,6 +25,7 @@ class _ChatPageBodyState extends State<ChatPageBody> {
     chatMessages = [
       ChatMessage(
         user: user.user,
+        image_user: user.image_user,
         image: user.image,
         message: user.message,
         messageType: ChatMessageType.text,
@@ -32,6 +34,7 @@ class _ChatPageBodyState extends State<ChatPageBody> {
       ),
       ChatMessage(
         user: user.user,
+        image_user: user.image_user,
         image: user.image,
         message: user.image,
         messageType: ChatMessageType.image,
@@ -86,6 +89,10 @@ class _ChatPageBodyState extends State<ChatPageBody> {
                 decoration: BoxDecoration(
                   color: AppColors.pPrimaryColor.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(50),
+                  border: Border.all(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.transparent),
                 ),
                 child: Row(
                   children: [
@@ -95,7 +102,7 @@ class _ChatPageBodyState extends State<ChatPageBody> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => PremiumScreen(),
+                            builder: (context) => const PremiumScreen(),
                           ),
                         );
                       },
@@ -121,7 +128,7 @@ class _ChatPageBodyState extends State<ChatPageBody> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => PremiumScreen(),
+                            builder: (context) => const PremiumScreen(),
                           ),
                         );
                       },
@@ -158,7 +165,7 @@ class Messages extends StatelessWidget {
           if (!message.isSender) ...[
             CircleAvatar(
               radius: 13,
-              backgroundImage: NetworkImage(message.image.trim()),
+              backgroundImage: NetworkImage(message.image_user.trim()),
             )
           ],
           const SizedBox(
@@ -176,14 +183,17 @@ class Messages extends StatelessWidget {
             child: message.messageType == ChatMessageType.text
                 ? Text(
                     message.message,
-                    style: const TextStyle(color: Colors.black),
+                    style: TextStyle(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black),
                   )
                 : InkWell(
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => PremiumScreen(),
+                          builder: (context) => const PremiumScreen(),
                         ),
                       );
                     },
@@ -195,7 +205,7 @@ class Messages extends StatelessWidget {
                           // Blurlu arka plan için BackdropFilter kullanımı
                           ImageFiltered(
                             imageFilter: ImageFilter.blur(
-                                sigmaX: 6, sigmaY: 6, tileMode: TileMode.decal),
+                                sigmaX: 8, sigmaY: 8, tileMode: TileMode.decal),
                             enabled: true,
                             child: Image.network(
                               message.message.trim(),

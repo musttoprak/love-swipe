@@ -36,7 +36,6 @@ class UserService {
     return null;
   }
 
-
   Future<void> addUser(String username, String password, String email,
       {String profilePhoto = '', String biography = ''}) async {
     MySqlConnection connection = await _db.connect();
@@ -57,15 +56,15 @@ class UserService {
     await _db.close(connection);
   }
 
-  Future<bool> verifyUser(String username, String password) async {
+  Future<bool> verifyUser(String email, String password) async {
     MySqlConnection connection = await _db.connect();
     print("connection");
     String hashedPassword = hashPassword(password); // Girilen şifreyi hashle
 
     var result = await connection.query('''
-    SELECT * FROM users WHERE username = ? AND password = ?
+    SELECT * FROM users WHERE email = ? AND password = ?
   ''', [
-      username,
+      email,
       hashedPassword,
     ]);
 
@@ -80,7 +79,8 @@ class UserService {
     return digest.toString(); // Hashlenmiş şifreyi string olarak döndürün
   }
 
-  Future<void> updateUser(int userId, String newUsername, String newEmail, String newBiography) async {
+  Future<void> updateUser(int userId, String newUsername, String newEmail,
+      String newBiography) async {
     MySqlConnection connection = await _db.connect();
 
     await connection.query('''
@@ -96,7 +96,6 @@ class UserService {
 
     await _db.close(connection);
   }
-
 
   Future<void> updateUsername(int userId, String newUsername) async {
     MySqlConnection connection = await _db.connect();
@@ -154,15 +153,14 @@ class UserService {
     MySqlConnection connection = await _db.connect();
 
     var result = await connection.query('''
-    SELECT * FROM users ORDER BY RAND() LIMIT ?
-  ''', [
-      limit,
-    ]);
+    SELECT * FROM users WHERE isBot = ? ORDER BY RAND() LIMIT ?
+  ''', [0, limit]);
 
     await _db.close(connection);
     List<UserModel> userModels = [];
     if (result.isNotEmpty) {
-      for (var row in result) { // Her bir `row` için döngüyü başlatın
+      for (var row in result) {
+        // Her bir `row` için döngüyü başlatın
         userModels.add(UserModel(
           id: row['id'],
           username: row['username'],

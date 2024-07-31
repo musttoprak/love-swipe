@@ -8,26 +8,29 @@ class DisplayImage extends StatelessWidget {
   final String imagePath;
   final VoidCallback onPressed;
   final bool isEditIcon;
+
   // Constructor
-  const DisplayImage({
-    Key? key,
-    required this.imagePath,
-    required this.onPressed,
-    this.isEditIcon = true
-  }) : super(key: key);
+  const DisplayImage(
+      {Key? key,
+      required this.imagePath,
+      required this.onPressed,
+      this.isEditIcon = true})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    const color = AppColors.greenColor;
+    const color = AppColors.pinkColor;
 
     return Center(
         child: Stack(children: [
       buildImage(color),
-      isEditIcon ?  Positioned(
-        child: buildEditIcon(color),
-        right: 4,
-        top: 10,
-      ): const SizedBox()
+      isEditIcon
+          ? Positioned(
+              right: 4,
+              top: 10,
+              child: buildEditIcon(color),
+            )
+          : const SizedBox()
     ]));
   }
 

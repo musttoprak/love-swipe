@@ -51,6 +51,7 @@ class LocalNotifications {
     if(!isFirstLogin && isLoggedIn){
       if (notificationCount < 7) {
         List<String> images = prefs.getStringList('images') ?? [];
+        List<String> images_user = prefs.getStringList('images_user') ?? [];
         List<String> messages = prefs.getStringList('messages') ?? [];
         List<String> users = prefs.getStringList('users') ?? [];
         print(
@@ -58,19 +59,24 @@ class LocalNotifications {
         if (images.isEmpty || messages.isEmpty || users.isEmpty) {
           BotService botService = BotService();
           List<String> images = await botService.getRandomImages();
+          print("images.length ${images.length}");
+          List<String> images_user = await botService.getRandomImages();
+          print("images_user.length ${images_user.length}");
           List<String> messages = await botService.getRandomMessages();
+          print("messages.length ${messages.length}");
           List<String> users = await botService.getRandomUsers();
-
+          print("users.length ${users.length}");
           //List<String> images = await loadAsset('assets/bot_image.txt');
           //List<String> messages = await loadAsset('assets/bot_message.txt');
           //List<String> users = await loadAsset('assets/bot_user.txt');
-
           await prefs.setStringList('images', images);
+          await prefs.setStringList('images_user', images_user);
           await prefs.setStringList('messages', messages);
           await prefs.setStringList('users', users);
           await prefs.setInt('notificationCount', 0);
 
           print("images ${images.length}");
+          print("images_user ${images_user.length}");
           print("message ${messages.length}");
           print("users ${users.length}");
           await showPeriodicNotifications();
@@ -78,7 +84,7 @@ class LocalNotifications {
         }
         print(notificationCount);
         var androidPlatformChannelSpecifics = const AndroidNotificationDetails(
-            'com.android.application', 'com.example.love_swipe',
+            'com.android.application', 'com.love.swipe',
             importance: Importance.max, priority: Priority.high);
         var platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
@@ -91,10 +97,15 @@ class LocalNotifications {
             ticker: 'ticker');
         const NotificationDetails notificationDetails =
         NotificationDetails(android: androidNotificationDetails);
+        print(images.length);
+        print(images_user.length);
+        print(messages.length);
+        print(users.length);
 
         // ChatMessage modelini oluştur ve kaydet
         ChatMessage chatMessage = ChatMessage(
           image: images[notificationCount],
+          image_user: images_user[notificationCount],
           message: messages[notificationCount],
           messageType: ChatMessageType.text,
           messageStatus: MessageStatus.not_sent,

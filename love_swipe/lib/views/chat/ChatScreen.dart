@@ -49,7 +49,7 @@ class _ChattingState extends State<Chatting> {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundImage: NetworkImage(user.image.trim()),
+                backgroundImage: NetworkImage(user.image_user.trim()),
               ),
               Positioned(
                 right: 0,
