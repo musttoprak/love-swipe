@@ -41,16 +41,27 @@ android {
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 2
+        versionCode = 3
         versionName = flutterVersionName
         multiDexEnabled = true
+    }
+    signingConfigs {
+        release {
+            keyAlias 'love-swipe'
+            keyPassword '123456789'
+            storeFile file('"C:\\Users\\asus\\.android\\love-swipe-keystore.jks"')
+            storePassword '123456789'
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+        }
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.debug
+            signingConfig = signingConfigs.release
         }
     }
 }
