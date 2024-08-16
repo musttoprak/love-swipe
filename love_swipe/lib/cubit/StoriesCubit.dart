@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:love_swipe/services/StoryService.dart'; // Replace with your actual service import
-import 'package:love_swipe/services/UserService.dart';
+import 'package:love/services/StoryService.dart'; // Replace with your actual service import
+import 'package:love/services/UserService.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/StoryModel.dart';
 import '../models/UserModel.dart'; // Replace with your actual model import

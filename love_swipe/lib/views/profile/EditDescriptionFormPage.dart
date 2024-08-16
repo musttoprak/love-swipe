@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:love_swipe/models/UserModel.dart';
-import 'package:love_swipe/services/UserService.dart';
+import 'package:love/models/UserModel.dart';
+import 'package:love/services/UserService.dart';
 
 // This class handles the Page to edit the About Me Section of the User Profile.
 class EditDescriptionFormPage extends StatefulWidget {

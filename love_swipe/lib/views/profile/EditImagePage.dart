@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:love_swipe/services/UserService.dart';
+import 'package:love/services/UserService.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../components/build_appbar.dart';

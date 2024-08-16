@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:love_swipe/views/tab_screens/Chats.dart';
+import 'package:love/views/tab_screens/Chats.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/app_colors.dart';
@@ -80,4 +80,10 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
+
+class AppColors {
+  static const Color pinkColor = Color(0xFFE91E63); // Example color
+  static const Color lightPinkColor = Color(0xFFF8BBD0); // Light pink color
+// Add other colors as needed
 }

@@ -9,6 +9,7 @@ import '../models/ChatMessage.dart';
 class ChatCubit extends Cubit<ChatState> {
   bool isLoading = false;
   List<ChatMessage> chatMessages = [];
+  Timer? _timer;
 
   ChatCubit() : super(ChatsInitialState()) {
     loadChats();
@@ -18,10 +19,10 @@ class ChatCubit extends Cubit<ChatState> {
   Future<void> loadChats() async {
     print("periyota girdi");
     changeLoadingView();
-    SharedPreferences.resetStatic();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String> chatMessagesJson = prefs.getStringList('chatMessages') ?? [];
     print("chat mesaj: ${chatMessagesJson.length}");
+
     chatMessages = chatMessagesJson.map((messageJson) {
       print("object");
       return ChatMessage.fromJson(jsonDecode(messageJson));
@@ -34,14 +35,25 @@ class ChatCubit extends Cubit<ChatState> {
 
   void changeLoadingView() {
     isLoading = !isLoading;
-    emit(ChatsLoadingState(isLoading));
+    if (!isClosed) {
+      emit(ChatsLoadingState(isLoading));
+    }
   }
 
-
   void startPeriodicUpdate() {
-    Timer.periodic(const Duration(seconds: 5), (timer) {
-      loadChats();
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (!isClosed) {
+        loadChats();
+      } else {
+        _timer?.cancel(); // Timer'ı iptal et.
+      }
     });
+  }
+
+  @override
+  Future<void> close() {
+    _timer?.cancel(); // Timer'ı iptal etmeyi unutmayın.
+    return super.close();
   }
 }
 

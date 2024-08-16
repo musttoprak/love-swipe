@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:love_swipe/views/HomeScreen.dart';
-import 'package:love_swipe/views/auth/LoginScreen.dart';
+import 'package:love/views/HomeScreen.dart';
+import 'package:love/views/auth/LoginScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../components/already_have_an_account_check.dart';
@@ -36,37 +36,68 @@ class SignUpScreen extends StatelessWidget {
       );
 
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomeScreen(
-            toggleTheme: toggleTheme,
-          ),
-        ),
-      );
+      _navigateToHomeScreen(context);
     }
+  }
+
+  void _navigateToHomeScreen(BuildContext context) {
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => HomeScreen(
+          toggleTheme: toggleTheme,
+        ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          const curve = Curves.ease;
+
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            'Kayıt Ol',
-            style: TextStyle(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : Colors.black,
-                fontWeight: FontWeight.bold),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Kayıt Ol',
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Center(
+      ),
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppColors.lightPinkColor, AppColors.pinkColor],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+          Center(
             child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
               child: Form(
                 key: _formKey,
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(24),
@@ -75,140 +106,82 @@ class SignUpScreen extends StatelessWidget {
                         height: MediaQuery.sizeOf(context).width * .5,
                       ),
                     ),
-                    SizedBox(
-                      height: MediaQuery.sizeOf(context).height * .1,
-                    ),
-                    TextFormField(
+                    const SizedBox(height: 40),
+                    _buildTextField(
                       controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      textInputAction: TextInputAction.next,
-                      cursorColor: kPrimaryColor,
-                      onSaved: (email) {},
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Email boş olamaz';
-                        }
-                        return null;
-                      },
-                      decoration: const InputDecoration(
-                        hintText: "Email adresi giriniz",
-                        prefixIcon: Padding(
-                          padding: EdgeInsets.all(defaultPadding),
-                          child: Icon(Icons.person),
-                        ),
-                      ),
+                      hintText: "Email adresi giriniz",
+                      icon: Icons.person,
+                      isPassword: false,
                     ),
-                    Padding(
-                      padding:
-                          const EdgeInsets.symmetric(vertical: defaultPadding),
-                      child: TextFormField(
-                        controller: _nameController,
-                        textInputAction: TextInputAction.done,
-                        obscureText: true,
-                        cursorColor: kPrimaryColor,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Adınız boş olamaz';
-                          }
-                          return null;
-                        },
-                        decoration: const InputDecoration(
-                          hintText: "Adınızı girin",
-                          prefixIcon: Padding(
-                            padding: EdgeInsets.all(defaultPadding),
-                            child: Icon(Icons.lock),
-                          ),
-                        ),
-                      ),
+                    const SizedBox(height: 20),
+                    _buildTextField(
+                      controller: _nameController,
+                      hintText: "Adınızı girin",
+                      icon: Icons.account_circle,
+                      isPassword: false,
                     ),
-                    Padding(
-                      padding:
-                          const EdgeInsets.symmetric(vertical: defaultPadding),
-                      child: TextFormField(
-                        controller: _passwordController,
-                        textInputAction: TextInputAction.done,
-                        obscureText: true,
-                        cursorColor: kPrimaryColor,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Şifre boş olamaz';
-                          }
-                          return null;
-                        },
-                        decoration: const InputDecoration(
-                          hintText: "Şifreniz",
-                          prefixIcon: Padding(
-                            padding: EdgeInsets.all(defaultPadding),
-                            child: Icon(Icons.lock),
-                          ),
-                        ),
-                      ),
+                    const SizedBox(height: 20),
+                    _buildTextField(
+                      controller: _passwordController,
+                      hintText: "Şifreniz",
+                      icon: Icons.lock,
+                      isPassword: true,
                     ),
-                    Padding(
-                      padding:
-                          const EdgeInsets.symmetric(vertical: defaultPadding),
-                      child: TextFormField(
-                        controller: _biographyController,
-                        textInputAction: TextInputAction.done,
-                        obscureText: true,
-                        cursorColor: kPrimaryColor,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Biyografi boş olamaz';
-                          }
-                          return null;
-                        },
-                        decoration: const InputDecoration(
-                          hintText: "Biyografinizi girin",
-                          prefixIcon: Padding(
-                            padding: EdgeInsets.all(defaultPadding),
-                            child: Icon(Icons.lock),
-                          ),
-                        ),
-                      ),
+                    const SizedBox(height: 20),
+                    _buildTextField(
+                      controller: _biographyController,
+                      hintText: "Biyografinizi girin",
+                      icon: Icons.info,
+                      isPassword: false,
                     ),
-                    const SizedBox(height: defaultPadding),
+                    const SizedBox(height: 40),
                     ElevatedButton(
                       onPressed: () => _signup(context),
-                      style: const ButtonStyle(
-                          backgroundColor:
-                              WidgetStatePropertyAll(AppColors.pinkColor)),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.login,
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                          SizedBox(
-                            width: 6,
-                          ),
-                          Text(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        backgroundColor: AppColors.pinkColor,
+                      ),
+                      child: SizedBox(
+                        width: 200, // Sabit genişlik
+                        child: Center(
+                          child: Text(
                             "KAYIT OL",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                    const SizedBox(height: defaultPadding),
+                    const SizedBox(height: 20),
                     AlreadyHaveAnAccountCheck(
                       login: false,
                       press: () {
                         Navigator.pushAndRemoveUntil(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return LoginScreen(
-                                toggleTheme: toggleTheme,
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) => LoginScreen(
+                              toggleTheme: toggleTheme,
+                            ),
+                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                              const begin = Offset(1.0, 0.0);
+                              const end = Offset.zero;
+                              const curve = Curves.ease;
+
+                              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                              return SlideTransition(
+                                position: animation.drive(tween),
+                                child: child,
                               );
                             },
                           ),
-                          (route) => false,
+                              (route) => false,
                         );
                       },
                     ),
@@ -217,6 +190,46 @@ class SignUpScreen extends StatelessWidget {
               ),
             ),
           ),
-        ));
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hintText,
+    required IconData icon,
+    required bool isPassword,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: isPassword,
+      cursorColor: kPrimaryColor,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return '$hintText boş olamaz';
+        }
+        return null;
+      },
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: TextStyle(color: Colors.grey.shade500),
+        prefixIcon: Icon(icon, color: kPrimaryColor),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.8),
+        contentPadding: const EdgeInsets.all(16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
   }
 }
+
+class AppColors {
+  static const Color pinkColor = Color(0xFFE91E63); // Example color
+  static const Color lightPinkColor = Color(0xFFF8BBD0); // Light pink color
+// Add other colors as needed
+}
+

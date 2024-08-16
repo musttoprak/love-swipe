@@ -1,12 +1,12 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
-import 'package:love_swipe/constants/app_colors.dart';
-import 'package:love_swipe/services/LocalNotifications.dart';
-import 'package:love_swipe/views/HomeScreen.dart';
-import 'package:love_swipe/views/auth/LoginScreen.dart';
+import 'package:love/constants/app_colors.dart';
+import 'package:love/services/LocalNotifications.dart';
+import 'package:love/views/HomeScreen.dart';
+import 'package:love/views/auth/LoginScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
@@ -26,7 +26,7 @@ void callbackDispatcher() {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
   bool runingNotification = prefs.getBool('runingNotification') ?? false;

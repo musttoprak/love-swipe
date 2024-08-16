@@ -1,16 +1,14 @@
 import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:love_swipe/constants/app_colors.dart';
-import 'package:love_swipe/views/profile/EditDescriptionFormPage.dart';
-import 'package:love_swipe/views/profile/EditEmailFormPage.dart';
-import 'package:love_swipe/views/profile/EditImagePage.dart';
-import 'package:love_swipe/views/profile/EditNameFormPage.dart';
+import 'package:love/constants/app_colors.dart';
+import 'package:love/views/profile/EditDescriptionFormPage.dart';
+import 'package:love/views/profile/EditEmailFormPage.dart';
+import 'package:love/views/profile/EditImagePage.dart';
+import 'package:love/views/profile/EditNameFormPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../components/display_widget.dart';
 import '../../cubit/ProfileCubit.dart';
 import '../../models/UserModel.dart';
@@ -44,7 +42,7 @@ class _ProfileTabState extends State<ProfileTab> with ProfileMixin {
                 appBar: AppBar(
                   title: const Text("Profil",
                       style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      TextStyle(fontWeight: FontWeight.bold, fontSize: 19)),
                 ),
                 body: const Center(child: CircularProgressIndicator()));
           } else if (state is ProfileLoadedState) {
@@ -66,7 +64,7 @@ class _ProfileTabState extends State<ProfileTab> with ProfileMixin {
               appBar: AppBar(
                 title: const Text("Profil",
                     style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               ),
               body: const Center(child: CircularProgressIndicator()),
             );
@@ -159,7 +157,7 @@ mixin ProfileMixin {
                     buildUserInfoDisplay(context, user.username, 'Adınız',
                         EditNameFormPage(user), nameController),
                     const SizedBox(height: 20),
-                    buildUserInfoDisplay(context, user.email, 'Email adesiniz',
+                    buildUserInfoDisplay(context, user.email, 'Email adresiniz',
                         EditEmailFormPage(user), emailController),
                     const SizedBox(height: 20),
                     buildUserInfoDisplay(
@@ -180,11 +178,18 @@ mixin ProfileMixin {
                   await context.read<ProfileCubit>().updateProfile();
                 },
                 child: Container(
-                    width: MediaQuery.sizeOf(context).width * .8,
-                    padding: const EdgeInsets.all(8),
+                    width: MediaQuery.sizeOf(context).width * .9, // Genişlik artırıldı
+                    padding: const EdgeInsets.all(16), // Padding artırıldı
                     decoration: BoxDecoration(
                       color: AppColors.pinkColor,
                       borderRadius: BorderRadius.circular(12),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 8,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -193,14 +198,14 @@ mixin ProfileMixin {
                         Icon(
                           Icons.update,
                           color: Colors.white,
-                          size: 18,
+                          size: 21,
                         ),
                         SizedBox(
                           width: 16,
                         ),
                         Text(
                           "Güncelle",
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(color: Colors.white, fontSize: 21, fontWeight: FontWeight.bold),
                         ),
                       ],
                     )),
@@ -214,77 +219,56 @@ mixin ProfileMixin {
 
   // Widget builds the display item with the proper formatting to display the user's info
   Widget buildUserInfoDisplay(BuildContext context, String getValue,
-          String title, Widget editPage, TextEditingController controller) =>
+      String title, Widget editPage, TextEditingController controller) =>
       Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey,
-                ),
+        padding: const EdgeInsets.only(bottom: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
               ),
-              const SizedBox(
-                height: 1,
-              ),
-              Container(
-                width: MediaQuery.sizeOf(context).width - 50,
-                height: title == "Biyografiniz" ? 120 : 40,
-                decoration: const BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Colors.grey,
-                      width: .5,
-                    ),
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            Container(
+              width: MediaQuery.sizeOf(context).width - 50,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 6,
+                    offset: Offset(0, 3),
                   ),
+                ],
+              ),
+              child: TextFormField(
+                controller: controller,
+                minLines: title == "Biyografiniz" ? 4 : 1,
+                maxLines: title == "Biyografiniz" ? 4 : 1,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: title == "Biyografiniz" ? 12 : 8),
                 ),
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: controller,
-                          minLines: title == "Biyografiniz" ? 4 : 1,
-                          maxLines: title == "Biyografiniz" ? 4 : 1,
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.only(bottom: 12),
-                          ),
-                          validator: (value) {
-                            if (value == null) {
-                              return "Lütfen bu alanı doldurunuz";
-                            }
-                            return "";
-                          },
-                          //onPressed: () async {
-                          //  await navigateSecondPage(context, editPage);
-                          //  await context.read<ProfileCubit>().getProfile();
-                          //},
-
-                          //child: Text(
-                          //  getValue,
-                          //  style: const TextStyle(
-                          //      fontSize: 16,
-                          //      height: 1.4,
-                          //      color: AppColors.greenColor),
-                          //  textAlign: TextAlign.start,
-                          //)),
-                        ),
-                      ),
-                      const Icon(
-                        Icons.keyboard_arrow_right,
-                        color: Colors.grey,
-                        size: 40.0,
-                      )
-                    ]),
-              )
-            ],
-          ));
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Lütfen bu alanı doldurunuz";
+                  }
+                  return null;
+                },
+              ),
+            ),
+          ],
+        ),
+      );
 
   // Refrshes the Page after updating user info.
   FutureOr onGoBack(dynamic value) {
@@ -296,4 +280,10 @@ mixin ProfileMixin {
     Route route = MaterialPageRoute(builder: (context) => editForm);
     await Navigator.push(context, route).then(onGoBack);
   }
+}
+
+class AppColors {
+  static const Color pinkColor = Color(0xFFE91E63); // Example color
+  static const Color lightPinkColor = Color(0xFFF8BBD0); // Light pink color
+// Add other colors as needed
 }

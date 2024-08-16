@@ -1,9 +1,6 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
-
-import '../../constants/app_colors.dart';
 
 class PremiumScreen extends StatefulWidget {
   const PremiumScreen({super.key});
@@ -12,237 +9,248 @@ class PremiumScreen extends StatefulWidget {
   State<PremiumScreen> createState() => _PremiumScreenState();
 }
 
-InAppPurchase _inAppPurchase = InAppPurchase.instance;
-late StreamSubscription<dynamic> _streamSubscription;
-List<ProductDetails> _products = [];
-const _variant = {"love-swipe just once", "love-swipe yearly"};
-
 class _PremiumScreenState extends State<PremiumScreen> {
-  final String mainImageUrl = 'assets/pay/background_pay.png';
+  final InAppPurchase _inAppPurchase = InAppPurchase.instance;
+  late StreamSubscription<List<PurchaseDetails>> _subscription;
+  List<ProductDetails> _products = [];
+  bool _isAvailable = false;
+  String _selectedSubscription = 'Aylık'; // Default selection
 
-  final String image1Url = 'assets/pay/tac_pay.png';
-
-  final String image2Url = 'assets/pay/love_swap_pay.png';
-
-  final String image3Url = 'assets/pay/premium_pay.png';
-
-  final String image4Url = 'assets/pay/text_pay.png';
+  static const Set<String> _kProductIds = {'aylik2', 'yillik'};
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    Stream purchaseUpdated = InAppPurchase.instance.purchaseStream;
-    _streamSubscription = purchaseUpdated.listen((purchaseList) {
-      _listenToPurchase(purchaseList, context);
+    final Stream<List<PurchaseDetails>> purchaseUpdated =
+        _inAppPurchase.purchaseStream;
+    _subscription = purchaseUpdated.listen((purchaseDetailsList) {
+      _listenToPurchaseUpdated(purchaseDetailsList);
     }, onDone: () {
-      _streamSubscription.cancel();
+      _subscription.cancel();
     }, onError: (error) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Error")));
+      print("Error: $error");
     });
-    initStore();
+    _initStoreInfo();
   }
 
-  initStore() async {
-    ProductDetailsResponse productDetailsResponse =
-        await _inAppPurchase.queryProductDetails(_variant);
-    print("productDetailsResponse.error");
-    print(productDetailsResponse.error);
-    if (productDetailsResponse.error == null) {
+  Future<void> _initStoreInfo() async {
+    final bool isAvailable = await _inAppPurchase.isAvailable();
+    if (!isAvailable) {
       setState(() {
-        _products = productDetailsResponse.productDetails;
-        print("_products set state");
-        print(_products);
+        _isAvailable = false;
       });
+      return;
+    }
+
+    final ProductDetailsResponse productDetailResponse =
+    await _inAppPurchase.queryProductDetails(_kProductIds);
+    if (productDetailResponse.error != null) {
+      print("Error querying product details: ${productDetailResponse.error}");
+      return;
+    }
+
+    if (productDetailResponse.productDetails.isEmpty) {
+      setState(() {
+        _isAvailable = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isAvailable = true;
+      _products = productDetailResponse.productDetails;
+    });
+  }
+
+  void _listenToPurchaseUpdated(List<PurchaseDetails> purchaseDetailsList) {
+    for (var purchaseDetails in purchaseDetailsList) {
+      if (purchaseDetails.status == PurchaseStatus.pending) {
+        _showPendingUI();
+      } else {
+        if (purchaseDetails.status == PurchaseStatus.error) {
+          _handleError(purchaseDetails.error!);
+        } else if (purchaseDetails.status == PurchaseStatus.purchased ||
+            purchaseDetails.status == PurchaseStatus.restored) {
+          _deliverProduct(purchaseDetails);
+        }
+        if (purchaseDetails.pendingCompletePurchase) {
+          _inAppPurchase.completePurchase(purchaseDetails);
+        }
+      }
     }
   }
 
-  _listenToPurchase(
-      List<PurchaseDetails> purchaseDetailsList, BuildContext context) {
-    purchaseDetailsList.forEach((PurchaseDetails purchaseDetails) async {
-      if (purchaseDetails.status == PurchaseStatus.pending) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text("Pending")));
-      } else if (purchaseDetails.status == PurchaseStatus.error) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text("Error")));
-      } else if (purchaseDetails.status == PurchaseStatus.purchased) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text("Purchased")));
-      }
-    });
+  void _showPendingUI() {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text("Pending...")));
   }
 
-  _buy(int which) {
-    print("_products");
-    print(_products);
-    final PurchaseParam param = PurchaseParam(productDetails: _products[which]);
-    _inAppPurchase.buyConsumable(purchaseParam: param);
+  void _handleError(IAPError error) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Error: ${error.message}")));
+  }
+
+  void _deliverProduct(PurchaseDetails purchaseDetails) {
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Purchased successfully!")));
+  }
+
+  void _buyProduct(ProductDetails productDetails) {
+    final PurchaseParam purchaseParam =
+    PurchaseParam(productDetails: productDetails);
+    _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam);
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_isAvailable) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Premium'),
+        ),
+        body: const Center(
+          child: Text('Store is not available.'),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
-        child: Stack(
-          children: [
-            Image.asset(
-              mainImageUrl,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
-            SafeArea(
-              child: IconButton(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: const Icon(
+                    Icons.close,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'VIP statüsü',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Image.asset(
+                'assets/pay/ofof.png',
+                width: 190,
+                height: 190,
+              ),
+              const SizedBox(height: 20),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildFeature(Icons.block, 'Reklamsız insanlarla tanış'),
+                  _buildFeature(Icons.message, 'Sınırsız mesaj hakkı'),
+                  _buildFeature(Icons.video_call, 'Görüntülü görüşme'),
+                  _buildFeature(Icons.photo, 'Sınırsız hikaye paylaşma'),
+                ],
+              ),
+              const SizedBox(height: 40),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildOption('Aylık', '₺99,99',
+                      _selectedSubscription == 'Aylık'),
+                  _buildOption('Yıllık', '₺49,99/ay',
+                      _selectedSubscription == 'Yıllık'),
+                ],
+              ),
+              const SizedBox(height: 40),
+              ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  if (_selectedSubscription == 'Aylık' &&
+                      _products.isNotEmpty) {
+                    _buyProduct(_products[0]);
+                  } else if (_selectedSubscription == 'Yıllık' &&
+                      _products.isNotEmpty) {
+                    _buyProduct(_products[1]);
+                  }
                 },
-                icon: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.pink,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 100, vertical: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                ),
+                child: const Text('Abone Ol',
+                    style: TextStyle(fontSize: 18)),
+              ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Text(
+                  'Hizmet abonelik ile sağlanmaktadır. Abonelik sırasında ödeme Google Play hesabınızdan yapılacaktır. '
+                      'Otomatik yenileme, aboneliğin bitiminden 24 saat önce gerçekleşecektir. Hizmet, Google Play Hesap Ayarlarından iptal edilene kadar otomatik olarak yenilenecektir. '
+                      'Daha fazla bilgi Kullanıcı Anlaşması ve Hizmet koşulları bölümlerinde mevcuttur.',
+                  style: const TextStyle(
+                      fontSize: 12, color: Colors.grey),
+                  textAlign: TextAlign.center,
                 ),
               ),
-            ),
-            SafeArea(
-              child: Align(
-                alignment: Alignment.center,
-                child: Column(
-                  children: [
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    const Text(
-                      "Premium Satın Alın",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 24),
-                    ),
-                    const SizedBox(
-                      height: 25,
-                    ),
-                    Image.asset(
-                      image1Url,
-                      width: MediaQuery.sizeOf(context).width * .9,
-                      fit: BoxFit.cover,
-                    ),
-                    Image.asset(
-                      image2Url,
-                      width: MediaQuery.sizeOf(context).width * .7,
-                      fit: BoxFit.cover,
-                    ),
-                    Image.asset(
-                      image3Url,
-                      width: MediaQuery.sizeOf(context).width * .7,
-                      fit: BoxFit.cover,
-                    ),
-                    Image.asset(
-                      image4Url,
-                      width: MediaQuery.sizeOf(context).width * .7,
-                      fit: BoxFit.cover,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(24),
-                                boxShadow: [
-                                  BoxShadow(
-                                    offset: const Offset(0, 4),
-                                    blurRadius: 40,
-                                    color: Colors.grey.withOpacity(0.2),
-                                  ),
-                                ],
-                                border: Border.all(
-                                    color: Colors.grey, width: .5)),
-                            child: Column(
-                              children: [
-                                const Text(
-                                  'Aylık\n99.99₺',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    _buy(0);
-                                    print("99.99tl ödeme");
-                                  },
-                                  style: const ButtonStyle(
-                                    backgroundColor:
-                                        WidgetStatePropertyAll(Colors.white),
-                                  ),
-                                  child: const Text(
-                                    'Satın Alın',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(24),
-                                boxShadow: [
-                                  BoxShadow(
-                                    offset: const Offset(0, 4),
-                                    blurRadius: 40,
-                                    color: Colors.grey.withOpacity(0.2),
-                                  ),
-                                ],
-                                border: Border.all(
-                                    color: Colors.grey, width: .5)),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  'Yıllık\n49.99₺/ay',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    _buy(1);
-                                    print("49.99tl/ay ödeme");
-                                  },
-                                  style: const ButtonStyle(
-                                    backgroundColor:
-                                        WidgetStatePropertyAll(Colors.white),
-                                  ),
-                                  child: const Text(
-                                    'Satın Alın',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeature(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Icon(icon, size: 24, color: Colors.blue),
+          const SizedBox(width: 10),
+          Text(
+            text,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOption(String duration, String price, bool isSelected) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedSubscription = duration;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: isSelected ? Colors.orange.shade100 : Colors.white,
+          border: isSelected ? Border.all(color: Colors.orange) : Border.all(color: Colors.grey.shade300),
+        ),
+        child: Column(
+          children: [
+            Text(duration, style: const TextStyle(fontSize: 16)),
+            const SizedBox(height: 8),
+            Text(price, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ],
         ),
       ),

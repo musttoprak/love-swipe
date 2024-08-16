@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:love_swipe/models/UserModel.dart';
-import 'package:love_swipe/services/UserService.dart';
+import 'package:love/models/UserModel.dart';
+import 'package:love/services/UserService.dart';
 
 import '../../components/build_appbar.dart';
 

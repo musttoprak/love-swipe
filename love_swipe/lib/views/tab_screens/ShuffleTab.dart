@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:love_swipe/components/display_widget.dart';
-import 'package:love_swipe/constants/app_colors.dart';
+import 'package:love/components/display_widget.dart';
+import 'package:love/constants/app_colors.dart';
 import '../../cubit/ShuffleCubit.dart';
 import '../../models/StoryModel.dart';
 import '../components/PremiumScreen.dart';

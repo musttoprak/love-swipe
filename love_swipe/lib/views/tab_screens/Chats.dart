@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:love_swipe/cubit/ChatCubit.dart';
+import 'package:love/cubit/ChatCubit.dart';
 
 import '../../constants/app_colors.dart';
 import '../../models/ChatMessage.dart';

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:love_swipe/views/chat/ChatPageBody.dart';
+import 'package:love/views/chat/ChatPageBody.dart';
 
 import '../../constants/app_colors.dart';
 import '../../models/ChatMessage.dart';
